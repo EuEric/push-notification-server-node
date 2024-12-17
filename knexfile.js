@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import knex from 'knex';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -5,7 +6,8 @@ import { fileURLToPath } from 'url';
 // Resolve __dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+console.log(process.env.DEV_DATABASE_USER);
+console.log(process.env.DEV_DATABASE_HOST);
 const options = {
     development: {
         client: 'mysql2',
