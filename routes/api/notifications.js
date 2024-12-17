@@ -1,11 +1,13 @@
 import express from 'express';
 import { getMessaging } from 'firebase-admin/messaging'; // Ensure this is imported correctly based on your Firebase setup
+import knex from '../../knexfile.js';
 
 const router = express.Router();
 
 router.post('/send', async (req, res) => {
-    const receivedToken = req.body['fCM_token'];
-    console.log('Received token:', receivedToken);
+    const phone_number = req.body['phone_number'];
+    const device =  await knex('devices').where('phone_number', phone_number).first();
+    const token = device['token'];
 
     const message = {
         notification: {
@@ -18,19 +20,28 @@ router.post('/send', async (req, res) => {
                 color: '#7e55c3',
             },
         },
-        token: receivedToken,
+        token: token,
     };
 
     try {
-        const response = await getMessaging().send(message);
-        res.status(200).json({
-            message: 'Successfully sent message',
-            token: receivedToken,
-        });
-        console.log('Successfully sent message:', response);
-    } catch (error) {
-        res.status(400).send(error);
-        console.error('Error sending message:', error);
+        await getMessaging().send(message);
+        res.json({success: true, mmessage: 'Successfully sent message'});
+    } catch (e) {
+        //console.error('Error sending message:', e);
+        if (e.code === 'messaging/invalid-argument') {
+          return res.status(400)
+            .json({
+              success: false,
+              message: 'Invalid FCM registration token provided. Please check the token.',
+            });
+        }
+      
+        res.status(500)
+          .json({
+            success: false,
+            message: 'An unexpected error occurred while sending the notification.',
+            error: e.message,
+          });
     }
 });
 
