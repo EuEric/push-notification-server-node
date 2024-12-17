@@ -1,42 +1,78 @@
 import express from 'express';
-import knex from '../../knexfile.js'; // Adjust file extension for ESM
+import knex from '../../knexfile.js';
 const router = express.Router();
+const default_error_message = 'An unknown error occurred';
+const device_not_found = 'Device not found';
+const duplicate_device_error = 'Duplicate found: phone number or token already exists';
 
-router.post('', (req, res) => {
+router.post('', async (req, res) => {
   // TODO: Implementation
-  knex('devices')
-    .insert({
-      token: req.body['token'],
-      phone_number: req.body['phone_number']
-    })
-    .then(() => res.send('Created device!'));
+  try {
+  const [id] = await  knex('devices')
+  .insert({
+    token: req.body['token'],
+    phone_number: req.body['phone_number']
+  });
+  res.json({ success: true, id });
+  } catch(e) {
+    if (e.code === 'ER_DUP_ENTRY') {
+      return res.json({success: false, message: duplicate_device_error});
+    }
+    res.json({success: false, message: default_error_message});
+  }
 });
 
 router.get('', (req, res) => {
-  knex.select().from('devices').then((devices) => res.send(devices));
+  knex.select().from('devices').then((devices) => res.json({success: true, devices}));
 });
 
 router.get('/:id', (req, res) => {
   knex('devices')
     .where('id', req.params.id)
-    .then((device) => res.send(device));
+    .then((device) => res.json({successs:true, device: device[0] ? device[0] : 'No device found'}));
 });
 
 router.put('/:id', (req, res) => {
+  var id = req.params.id;
+
   knex('devices')
-    .where('id', req.params.id)
+    .where('id', id)
     .update({
       token: req.body['token'],
       phone_number: req.body['phone_number']
     })
-    .then(() => res.send('Updated device!'));
+    .then((count) => {
+      if(count === 0) {
+        return res.status(404).json({success: false, message: device_not_found});
+      }
+      res.json({ success: true, id });
+    })
+    .catch((e) => {
+      if (e.code === 'ER_DUP_ENTRY') {
+        return res.json({success: false, message: duplicate_device_error});
+      }
+      res.json({success: false, message: default_error_message});
+    })
 });
 
 router.delete('/:id', (req, res) => {
   knex('devices')
     .where('id', req.params.id)
     .del()
-    .then(() => res.send('Deleted device!'));
+    .then((count) => {
+      if (count === 0) {
+        return res.status(404).json({success: false, message: device_not_found});
+      }
+      res.json({success: true, message: 'Device deleted successfully'});
+    })
+    .catch((e) => {
+      if (e.code === 'ER_TRUNCATED_WRONG_VALUE') {
+        return res.status(400).json({success: false, message: 'Wrong input id format'});
+      }
+
+      res.status(500).json({success: false, message: default_error_message});
+    });
 });
+
 
 export default router;
