@@ -1,7 +1,6 @@
 import express from 'express';
 import cors from 'cors';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
-import { getMessaging } from 'firebase-admin/messaging';
 
 // Initialize Firebase app
 initializeApp({
