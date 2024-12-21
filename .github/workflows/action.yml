@@ -4,13 +4,14 @@ on:
   push:
     branches: 
       - main
+      - master
   
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      
+
       #Set up SSH connection
       - name: Set up SSH
         uses: appleboy/ssh-action@v0.1.10
