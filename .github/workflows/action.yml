@@ -22,7 +22,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           command_timeout: 10m
           script: | 
-            cd ${{ msecrets.WORK_DIR }} || exit 1
+            cd ${{ secrets.WORK_DIR }} || exit 1
             git pull origin main || exit 1
             docker-compose pull || exit 1
             docker-compose up -d || exit 1
