@@ -20,7 +20,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          command_timeout: 10m
+          command_timeout: 20m
           script: | 
             cd ${{ secrets.WORK_DIR }} || exit 1
             # Check if .git directory exists
@@ -28,7 +28,7 @@ jobs:
               echo "Repository not found. Cloning the repository using SSH..."
               # Use sshpass to provide passphrase for the key
               export SSHPASS="${{ secrets.SSH_PASSPHRASE }}"
-              sshpass -e git clone git@github.com:EuEric/push-notification-server-node.git || exit 1
+              sshpass -e git clone -v git@github.com:EuEric/push-notification-server-node.git || exit 1
             else
               echo "Repository found. Pulling the latest changes..."
               git pull origin main || exit 1
