@@ -3,7 +3,6 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - main
       - master
 
 jobs:
@@ -35,7 +34,7 @@ jobs:
             else
               echo "Repository found. Pulling the latest changes..."
               cd push-notification-server-node || exit 1
-              git pull origin main || exit 1
+              git pull origin master || exit 1
             fi
 
             # Pull latest Docker images and restart containers
