@@ -28,12 +28,13 @@ jobs:
 
             # Check if the repository already exists
             cd /root || exit 1
-            if [ ! -d notifications-server ]; then
+            if [ ! -d push-notification-server-node ]; then
               echo "Repository not found. Cloning the repository using SSH..."
               git clone -v git@github.com:EuEric/push-notification-server-node.git || exit 1
+              cd push-notification-server-node || exit 1
             else
               echo "Repository found. Pulling the latest changes..."
-              cd notifications-server || exit 1
+              cd push-notification-server-node || exit 1
               git pull origin main || exit 1
             fi
 
