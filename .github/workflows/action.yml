@@ -30,7 +30,7 @@ jobs:
             cd /root || exit 1
             if [ ! -d notifications-server ]; then
               echo "Repository not found. Cloning the repository using SSH..."
-              git clone git@github.com:EuEric/push-notification-server-node.git || exit 1
+              git clone -v git@github.com:EuEric/push-notification-server-node.git || exit 1
             else
               echo "Repository found. Pulling the latest changes..."
               cd notifications-server || exit 1
