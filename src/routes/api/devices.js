@@ -1,5 +1,5 @@
 import express from 'express';
-import knex from '../../knexfile.js';
+import { knex } from '../../db/db.js'
 const router = express.Router();
 const default_error_message = 'An unknown error occurred';
 const device_not_found = 'Device not found';
@@ -18,6 +18,7 @@ router.post('', async (req, res) => {
     if (e.code === 'ER_DUP_ENTRY') {
       return res.json({success: false, message: duplicate_device_error});
     }
+    console.log(e);
     res.json({success: false, message: default_error_message});
   }
 });

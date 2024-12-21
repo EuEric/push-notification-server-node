@@ -1,6 +1,6 @@
 import express from 'express';
 import { getMessaging } from 'firebase-admin/messaging'; // Ensure this is imported correctly based on your Firebase setup
-import knex from '../../knexfile.js';
+import { knex } from '../../db/db.js'
 
 const router = express.Router();
 
