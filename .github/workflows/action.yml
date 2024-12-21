@@ -16,15 +16,15 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}  # Use the private key stored in secrets
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}  # Use the passphrase if available
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           command_timeout: 20m
           script: |
             # Start the ssh-agent in the background
             eval $(ssh-agent -s)
 
-            # Load the existing private key into the SSH agent with passphrase
-            echo "$${{ secrets.SSH_PASSPHRASE }}" | ssh-add /root/.ssh/id_ed25519
+            # Add the private key to the agent without the passphrase
+            ssh-add /root/.ssh/id_ed25519
 
             # Check if the repository already exists
             cd /root || exit 1
