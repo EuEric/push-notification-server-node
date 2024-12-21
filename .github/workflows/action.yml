@@ -29,11 +29,11 @@ jobs:
             eval $(ssh-agent -s)  # Start the ssh-agent in the background
             
             # Save the SSH private key to a file
-            echo "$SSH_PRIVATE_KEY" > /tmp/id_rsa
-            chmod 600 /tmp/id_rsa
+            echo "$SSH_PRIVATE_KEY" > /tmp/id_ed25519
+            chmod 600 /tmp/id_ed25519
 
             # Add the private key to ssh-agent
-            ssh-add /tmp/id_rsa || exit 1
+            ssh-add /tmp/id_ed25519 || exit 1
 
             # Change to the directory where the repo should be located
             cd /home || exit 1
