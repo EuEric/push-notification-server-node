@@ -22,6 +22,11 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           command_timeout: 20m
           script: | 
+
+            # Start ssh-agent and add the SSH key with the passphrase
+            eval $(ssh-agent -s)  # Start the ssh-agent in the background
+            echo "$PRIVATE_KEY_GIT_SSH" | ssh-add - <<< "$SSH_PASSPHRASE"  # Add the private key and provide passphrase
+
             #Change to home directory before cloning, if needed
             cd /home || exit 1
             # Check if .git directory exists
