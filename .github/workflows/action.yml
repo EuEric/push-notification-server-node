@@ -23,8 +23,8 @@ jobs:
             # Start the ssh-agent in the background
             eval $(ssh-agent -s)
 
-            # Load the existing private key into the SSH agent
-            ssh-add /root/.ssh/id_ed25519
+            # Load the existing private key into the SSH agent with passphrase
+            echo "$${{ secrets.SSH_PASSPHRASE }}" | ssh-add /root/.ssh/id_ed25519
 
             # Check if the repository already exists
             cd /root || exit 1
