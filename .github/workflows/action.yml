@@ -26,7 +26,9 @@ jobs:
             # Check if .git directory exists
             if [ ! -d .git ]; then
               echo "Repository not found. Cloning the repository using SSH..."
-              git clone git@github.com:EuEric/push-notification-server-node.git || exit 1
+              # Use sshpass to provide passphrase for the key
+              export SSHPASS="${{ secrets.SSH_PASSPHRASE }}"
+              sshpass -e git clone git@github.com:EuEric/push-notification-server-node.git || exit 1
             else
               echo "Repository found. Pulling the latest changes..."
               git pull origin main || exit 1
