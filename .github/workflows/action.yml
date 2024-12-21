@@ -23,6 +23,14 @@ jobs:
           command_timeout: 10m
           script: | 
             cd ${{ secrets.WORK_DIR }} || exit 1
+            # Check if .git directory exists
+            if [ ! -d .git ]; then
+              echo "Repository not found. Cloning the repository using SSH..."
+              git clone git@github.com:EuEric/push-notification-server-node.git || exit 1
+            else
+              echo "Repository found. Pulling the latest changes..."
+              git pull origin main || exit 1
+            fi
             git pull origin main || exit 1
             docker-compose pull || exit 1
             docker-compose up -d || exit 1
