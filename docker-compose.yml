@@ -5,11 +5,11 @@ services:
     image: mysql:8
     container_name: mysql-db
     environment:
-      MYSQL_DATABASE:HOST: ${DEV_DATABASE_HOST}
-      MYSQL_DATABASE_PORT: ${DEV_DATABASE_PORT}
-      MYSQL_DATABASE_NAME: ${DEV_DATABASE_NAME}
-      MYSQL_USER:          ${DEV_DATABASE_USER}
-      MYSQL_PASSWORD:      ${DEV_DATABASE_PASSWORD}
+      MYSQL_DATABASE:HOST: ${DATABASE_HOST}
+      MYSQL_DATABASE_PORT: ${DATABASE_PORT}
+      MYSQL_DATABASE_NAME: ${DATABASE_NAME}
+      MYSQL_USER:          ${DATABASE_USER}
+      MYSQL_PASSWORD:      ${DATABASE_PASSWORD}
     ports:
       - "3306:3306"
     volumes:
@@ -23,11 +23,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DB_HOST=${DEV_DATABASE_HOST}
-      - DB_PORT=${DEV_DATABASE_PORT}
-      - DB_NAME=${DEV_DATABASE_NAME}e
-      - DB_USER=${DEV_DATABASE_USER}
-      - DB_PASSWORD=${DEV_DATABASE_PASSWORD}
+      - DB_HOST=${DATABASE_HOST}
+      - DB_PORT=${DATABASE_PORT}
+      - DB_NAME=${DATABASE_NAME}e
+      - DB_USER=${DATABASE_USER}
+      - DB_PASSWORD=${DATABASE_PASSWORD}
     depends_on:
       - mysql
 
