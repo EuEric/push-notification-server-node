@@ -3,16 +3,14 @@ import dotenv from 'dotenv'
 //For migrations the cwd will be src/db, and generally for running the main app, the cwd will be /src
 dotenv.config({ path: ['../../.env', '../.env'] })
 
-console.log('host:');
-console.log(process.env.DEV_DATABASE_HOST);
 export const development = {
   client: 'mysql2',
   connection: {
-    host: process.env.DEV_DATABASE_HOST,
-    port: process.env.DEV_DATABASE_PORT,
-    user: process.env.DEV_DATABASE_USER,
-    password: process.env.DEV_DATABASE_PASSWORD,
-    database: process.env.DEV_DATABASE_NAME,
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
   },
   migrations: {
     tableName: 'knex_migrations',
@@ -36,11 +34,13 @@ export const staging = {
 };
 
 export const production = {
-  client: 'postgresql',
+  client: 'mysql2',
   connection: {
-    database: 'my_db',
-    user: 'username',
-    password: 'password',
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
   },
   pool: {
     min: 2,

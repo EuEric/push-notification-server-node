@@ -19,6 +19,14 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           command_timeout: 20m
           script: |
+            #Ensure that .env file is populated with latest information
+            rm -f .env  # Remove the .env file if it exists
+            echo "DATABASE_HOST=${{ vars.DATABASE_HOST }} > .env
+            echo "DATABASE_PORT=${{ vars.DATABASE_PORT }} >> .env
+            echo "DATABASE_USER=r${{ vars.DATABASE_USER }} >> .env
+            echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }} >> .env
+            echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }} >> .env
+            echo "NODE_ENV=${{ vars.NODE_ENV }} >> .env
             # Start the ssh-agent in the background
             eval $(ssh-agent -s)
 
