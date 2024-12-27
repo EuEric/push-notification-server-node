@@ -15,3 +15,18 @@ To run the server for now, simply run the index.js file.
 
 To create a migration, run from root a command similar to:
 "knex migrate:make create_devices_table --migrations-directory db\migrations"
+
+How to use locally:
+
+populate .env variable in the root directory of the project
+
+Move cwd to /src
+
+Ensure that service json file is imported
+
+Windows:
+$env:GOOGLE_APPLICATION_CREDENTIALS="../service-account.json"
+
+Linux/Mac:
+export GOOGLE_APPLICATION_CREDENTIALS="../service-account.json"
+
