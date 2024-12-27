@@ -25,7 +25,7 @@ services:
     environment:
       - DB_HOST=${DATABASE_HOST}
       - DB_PORT=${DATABASE_PORT}
-      - DB_NAME=${DATABASE_NAME}e
+      - DB_NAME=${DATABASE_NAME}
       - DB_USER=${DATABASE_USER}
       - DB_PASSWORD=${DATABASE_PASSWORD}
     depends_on:
