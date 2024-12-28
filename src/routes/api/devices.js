@@ -24,13 +24,21 @@ router.post('', async (req, res) => {
 });
 
 router.get('', (req, res) => {
-  knex.select().from('devices').then((devices) => res.json({success: true, devices}));
+  try {
+    knex.select().from('devices').then((devices) => res.json({success: true, devices}));
+  } catch(e) {
+    res.status(500).json({success: false, message: default_error_message});
+  }
 });
 
 router.get('/:id', (req, res) => {
-  knex('devices')
-    .where('id', req.params.id)
-    .then((device) => res.json({successs:true, device: device[0] ? device[0] : 'No device found'}));
+  try {
+    knex('devices')
+      .where('id', req.params.id)
+      .then((device) => res.json({successs:true, device: device[0] ? device[0] : 'No device found'}));
+  } catch(e) {
+    res.status(500).json({success: false, message: default_error_message});
+  }
 });
 
 router.put('/:id', (req, res) => {
