@@ -36,7 +36,7 @@ jobs:
             fi
 
             #Add google services and export
-            echo "$SERVICE_ACCOUNT_JSON" | base64 -d > service-account.json
+            echo "${{ secrets.GOOGLE_SERVICE_ENCODED}}" | base64 -d > service-account.json
             export GOOGLE_APPLICATION_CREDENTIALS="./service-account.json"
 
             #Ensure that .env file is populated with latest information
