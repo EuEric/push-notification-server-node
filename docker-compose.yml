@@ -1,19 +1,28 @@
 version: '3.8'
 
 services:
+
   mysql:
     image: mysql:8
     container_name: mysql-db
+    restart: unless-stopped
     environment:
-      MYSQL_DATABASE:HOST: ${DATABASE_HOST}
-      MYSQL_DATABASE_PORT: ${DATABASE_PORT}
-      MYSQL_DATABASE_NAME: ${DATABASE_NAME}
-      MYSQL_USER:          ${DATABASE_USER}
-      MYSQL_PASSWORD:      ${DATABASE_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_DATABASE: ${DATABASE_NAME}
     ports:
-      - "3306:3306"
+      - "${DATABASE_HOST_PORT}:${DATABASE_PORT}"
+    expose:
+      - ${DATABASE_PORT}
+    networks:
+      - internalnet
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 5s
+      timeout: 4s
+      retries: 4
+      start_period: 0s
 
   app:
     build:
@@ -23,13 +32,20 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - DB_HOST=${DATABASE_HOST}
-      - DB_PORT=${DATABASE_PORT}
-      - DB_NAME=${DATABASE_NAME}
-      - DB_USER=${DATABASE_USER}
-      - DB_PASSWORD=${DATABASE_PASSWORD}
+      DATABASE_HOST: ${DATABASE_HOST} # Use the service name as the host
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+    networks:
+      -  internalnet
+
+networks:
+  internalnet:
+    driver: bridge
 
 volumes:
   db_data:

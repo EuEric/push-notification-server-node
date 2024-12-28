@@ -1,25 +1,23 @@
 # Use Node.js image
 FROM node:18
 
-# Copy package.json and package-lock.json
-COPY package*.json .
+# Set the working directory
+WORKDIR /app
 
-# Copy the app code
-COPY src/ .
+# Copy package.json and package-lock.json
+COPY package*.json ./
 
 # Install dependencies
 RUN npm install
+RUN npm install -g knex
+
+# Copy the rest of the code
+COPY . .
 
 # Expose the app port
 EXPOSE 3000
 
-# Set the working directory
-WORKDIR /src
+WORKDIR /app/src
 
-#TODO: fix environment to production
-
-# Run the migrations during build
-RUN knex migrate:latest --knexfile ./db/knexfile.js
-
-# Start the app
-CMD ["node", "app.js"]
+# Run the migrations and start the app
+CMD ["sh", "-c", "knex migrate:latest --knexfile db/knexfile.js && node app.js"]
