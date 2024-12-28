@@ -31,12 +31,15 @@ services:
     container_name: express-backend
     ports:
       - "3000:3000"
+    volumes:
+      - ./service-account.json:/app/service-account.json:ro
     environment:
       DATABASE_HOST: ${DATABASE_HOST} # Use the service name as the host
       DATABASE_PORT: ${DATABASE_PORT}
       DATABASE_NAME: ${DATABASE_NAME}
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      GOOGLE_APPLICATION_CREDENTIALS: /app/service-account.json
     depends_on:
       mysql:
         condition: service_healthy
