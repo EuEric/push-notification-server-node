@@ -38,6 +38,7 @@ jobs:
             #Ensure that .env file is populated with latest information
             rm -f .env  # Remove the .env file if it exists
             echo "DATABASE_HOST=${{ vars.DATABASE_HOST }}" > .env
+            echo "DATABASE_HOST_PORT=${{ vars.DATABASE_HOST_PORT }}" >> .env
             echo "DATABASE_PORT=${{ vars.DATABASE_PORT }}" >> .env
             echo "DATABASE_USER=${{ vars.DATABASE_USER }}" >> .env
             echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
@@ -48,4 +49,5 @@ jobs:
 
             # Pull latest Docker images and restart containers
             docker-compose pull || exit 1
+            dcoker-compose down || exit 1
             docker-compose up -d || exit 1
