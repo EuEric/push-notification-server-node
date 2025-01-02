@@ -16,7 +16,7 @@ services:
     networks:
       - internalnet
     volumes:
-      - db_data:/var/lib/mysql
+      - ${DB_VOLUME}:/var/lib/mysql
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
       interval: 5s

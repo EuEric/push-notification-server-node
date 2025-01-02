@@ -47,6 +47,7 @@ jobs:
             echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
             echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
             echo "NODE_ENV=${{ vars.NODE_ENV }}" >> .env
+            echo "DB_VOLUME=${{ secrets.DB_VOLUME }}" >> .env  
             echo "BACKEND_HOST_PORT=${{ vars.BACKEND_HOST_PORT }}" >> .env
             # Start the ssh-agent in the background
             eval $(ssh-agent -s)
