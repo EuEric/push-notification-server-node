@@ -3,12 +3,12 @@ name: Deploy to Server
 on:
   push:
     branches:
-      - master
+      - dev
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
 
     steps:
       - name: Set up SSH and Deploy
