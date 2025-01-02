@@ -51,4 +51,5 @@ networks:
     driver: bridge
 
 volumes:
-  db_data:
+  dev-db-data:
+  prod-db-data:
