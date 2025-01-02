@@ -30,7 +30,7 @@ services:
       dockerfile: Dockerfile
     container_name: express-backend
     ports:
-      - "3000:3000"
+      - "${BACKEND_HOST_PORT}:3000"
     volumes:
       - ./service-account.json:/app/service-account.json:ro
     environment:
