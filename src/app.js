@@ -25,7 +25,7 @@ import notificationsRoutes from './routes/api/notifications.js';
 import devicesRoutes from './routes/api/devices.js';
 
 // Determine the prefix based on the environment
-const devPrefix = process.env.NODE_ENV === 'development' ? '/dev/' : '';
+const devPrefix = process.env.NODE_ENV === 'development' ? '/dev/' : '/';
 
 // Mount the notifications routes
 app.use(`${devPrefix}api/notifications`, notificationsRoutes);
