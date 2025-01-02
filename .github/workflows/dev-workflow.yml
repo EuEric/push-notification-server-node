@@ -1,0 +1,56 @@
+name: Deploy to Server on Dev Branch
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Set up SSH and Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          command_timeout: 20m
+          script: |
+            # Add the private key to the agent without the passphrase
+            ssh-add /root/.ssh/id_ed25519
+
+            # Check if the repository already exists
+            cd /root || exit 1
+            if [ ! -d push-notification-server-node ]; then
+              echo "Repository not found. Cloning the repository using SSH..."
+              git clone -v git@github.com:EuEric/push-notification-server-node.git || exit 1
+              cd push-notification-server-node || exit 1
+            else
+              echo "Repository found. Pulling the latest changes..."
+              cd push-notification-server-node || exit 1
+              git pull origin dev || exit 1
+            fi
+
+            #Add google services and export
+            echo "${{ secrets.GOOGLE_SERVICE_ENCODED}}" | base64 -d > service-account.json
+
+            #Ensure that .env file is populated with latest information
+            rm -f .env  # Remove the .env file if it exists
+            echo "DATABASE_HOST=${{ vars.DATABASE_HOST }}" > .env
+            echo "DATABASE_HOST_PORT=${{ vars.DATABASE_HOST_PORT }}" >> .env
+            echo "DATABASE_PORT=${{ vars.DATABASE_PORT }}" >> .env
+            echo "DATABASE_USER=${{ vars.DATABASE_USER }}" >> .env
+            echo "DATABASE_PASSWORD=${{ secrets.DATABASE_PASSWORD }}" >> .env
+            echo "DATABASE_NAME=${{ secrets.DATABASE_NAME }}" >> .env
+            echo "NODE_ENV=${{ vars.NODE_ENV }}" >> .env
+            # Start the ssh-agent in the background
+            eval $(ssh-agent -s)
+
+            # Pull latest Docker images and restart containers
+            docker-compose pull || exit 1
+            docker-compose down || exit 1
+            docker-compose up -d || exit 1

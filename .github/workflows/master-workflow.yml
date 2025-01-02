@@ -1,14 +1,14 @@
-name: Deploy to Server
+name: Deploy to Server on Master Branch
 
 on:
   push:
     branches:
-      - dev
+      - master
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment: development
+    environment: production
 
     steps:
       - name: Set up SSH and Deploy
