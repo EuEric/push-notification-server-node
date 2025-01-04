@@ -4,6 +4,9 @@ info:
   version: '1.0'
 servers:
   - url: 185.92.192.88:3000/api
+    description: Production server
+  - url: 185.92.192.88:3001/dev/api
+    description: Development server
 paths:
   /devices:
     post:
@@ -249,12 +252,21 @@ paths:
             schema:
               type: object
               required:
-                - phone_number
+                - identifier
               properties:
-                phone_number:
+                identifier:
                   type: string
-                  description: The phone number associated with the device.
-                  example: "+1234567890"
+                  description: |
+                    A unique identifier consisting of exactly 8 hexadecimal characters.
+                    Valid characters include numbers (0-9) and letters (A-F, a-f).
+                  example: "3A0DE20B"
+                  pattern: "^[A-Fa-f0-9]{8}$"
+                cid:
+                  type: string
+                  description: |
+                    CID message format consisting of exactly 20 numeric characters.
+                  example: "00050001101412004198"
+                  pattern: "^[0-9]{20}$"
 
       responses:
         '200':
@@ -295,21 +307,25 @@ components:
     DeviceRequestBody:
       type: object
       required:
-      - phone_number
+      - identifier
       - token
       properties:
         token:
           type: string
           example: "abcd1234efgh5678"
-        phone_number:
+        identifier:
           type: string
-          example: "+1234567890"
+          description: |
+            A unique identifier consisting of exactly 8 hexadecimal characters.
+            Valid characters include numbers (0-9) and letters (A-F, a-f).
+          example: "3A0DE20B"
+          pattern: "^[A-Fa-f0-9]{8}$"
         
     Device:
       type: object
       required:
       - id
-      - phone_number
+      - identifier
       - token
       properties:
         id:
@@ -318,9 +334,13 @@ components:
         token:
           type: string
           example: "abcd1234efgh5678"
-        phone_number:
+        identifier:
           type: string
-          example: "+1234567890"
+          description: |
+            A unique identifier consisting of exactly 8 hexadecimal characters.
+            Valid characters include numbers (0-9) and letters (A-F, a-f).
+          example: "3A0DE20B"
+          pattern: "^[A-Fa-f0-9]{8}$"
     Devices:
       type: array
       items:

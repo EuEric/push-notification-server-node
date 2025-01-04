@@ -11,7 +11,7 @@ router.post('', async (req, res) => {
   const [id] = await  knex('devices')
   .insert({
     token: req.body['token'],
-    phone_number: req.body['phone_number']
+    identifier: req.body['identifier']
   });
   res.json({ success: true, id });
   } catch(e) {
@@ -43,12 +43,13 @@ router.get('/:id', (req, res) => {
 
 router.put('/:id', (req, res) => {
   var id = req.params.id;
+  //TODO: add some verification if input parameters are format and names they should
 
   knex('devices')
     .where('id', id)
     .update({
       token: req.body['token'],
-      phone_number: req.body['phone_number']
+      identifier: req.body['identifier']
     })
     .then((count) => {
       if(count === 0) {

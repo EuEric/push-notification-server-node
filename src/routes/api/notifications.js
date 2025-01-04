@@ -5,8 +5,18 @@ import { knex } from '../../db/db.js'
 const router = express.Router();
 
 router.post('/send', async (req, res) => {
-    const phone_number = req.body['phone_number'];
-    const device =  await knex('devices').where('phone_number', phone_number).first();
+    const identifier = req.body['identifier'];
+    const device =  await knex('devices').where('identifier', identifier).first();
+    if(!device) {
+      return res.status(400)
+      .json({
+        success: false,
+        message: 'No device matching identifier found.',
+      });
+    }
+    //TODO: parse in the same way as with moby
+    //TODO: verify cid format
+    const cid = req.body['cid'];
     const token = device['token'];
 
     const message = {
@@ -22,6 +32,8 @@ router.post('/send', async (req, res) => {
         },
         token: token,
     };
+    console.log(`cid: ${cid}`);
+    console.log(message);
 
     try {
         await getMessaging().send(message);
