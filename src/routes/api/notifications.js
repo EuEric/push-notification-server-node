@@ -6,6 +6,23 @@ const router = express.Router();
 
 router.post('/send', async (req, res) => {
     const identifier = req.body['identifier'];
+      // Verify identifier
+    if (!identifier) {
+      return res.status(400).json({
+          success: false,
+          message: 'Identifier is required and cannot be empty.',
+      });
+    }
+    //TODO: parse in the same way as with moby
+    //TODO: verify cid
+    const cid = req.body['cid'];
+    console.log(`cid ${cid}`);
+    if (!cid) {
+      return res.status(400).json({
+          success: false,
+          message: 'CID is required and cannot be empty.',
+      });
+    }
     const device =  await knex('devices').where('identifier', identifier).first();
     if(!device) {
       return res.status(400)
@@ -14,9 +31,6 @@ router.post('/send', async (req, res) => {
         message: 'No device matching identifier found.',
       });
     }
-    //TODO: parse in the same way as with moby
-    //TODO: verify cid format
-    const cid = req.body['cid'];
     const token = device['token'];
 
     const message = {
