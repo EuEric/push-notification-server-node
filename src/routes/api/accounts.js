@@ -1,28 +1,51 @@
 import dotenv from 'dotenv'
 import express from 'express';
-import { knex } from '../../db/db.js'
+import isStrongPassword from 'validator/lib/isStrongPassword.js';
+import isEmail from 'validator/lib/isEmail.js';
 import { verifyToken } from '../../middleware/token_verify.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Account } from '../../models/account.js'
 const router = express.Router();
-
 //Needed to specify multiple paths, because by default, config will look for a file called .env in the current working directory.
 //For migrations the cwd will be src/db, and generally for running the main app, the cwd will be /src
 dotenv.config({ path: ['../../.env', '../.env'] })
+const internalServerError = 'Internal server error';
+const invalidCredentialsError = 'Invalid credentials';
+const inputFieldMissingError = 'An input field missing';
+const emailAlreadyExistsError = 'Email already exists';
+const emailFormatInvalidError = 'Email format invalid';
+const weakPasswordError = 'Password is not strong enough';
+const accountNotFoundError = 'Account not found';
+
+const accountRegistrationSuccess = 'Account registered successfully';
 
 router.post('/register', async (req, res) => {
   try {
-    //TODO: add some validation
     const email = req.body.email;
+    const password = req.body.password;
+
+    //Check if values are empty or rnot
+    if(!email || !password) {
+      return res.status(400).json({error: inputFieldMissingError});
+    }
+
     //Check if user already exists
     const account = await Account.query().findOne({ email });
     if(account) {
-      return res.status(400).json({error: 'Email already exists'});
+      return res.status(400).json({error: emailAlreadyExistsError});
+    }
+
+    if(!isEmail(email)) {
+      return res.status(400).json({error: emailFormatInvalidError});
+    }
+
+    if(!isStrongPassword(password)) {
+      return res.status(400).json({error: weakPasswordError});
     }
 
     //Hash password
-    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     //Create a new account
     const accountInstance = new Account({
@@ -36,25 +59,33 @@ router.post('/register', async (req, res) => {
       password: hashedPassword,
     });
 
-    res.status(201).json({ message: 'Account registered successfully' });
+    res.status(201).json({ message: accountRegistrationSuccess });
   } catch(e) {
     console.log(e);
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: internalServerError });
   }
 });
 
 router.post('/login', async (req, res) => {
   try {
+    const email = req.body.email;
+    const password = req.body.password;
+
+    //Check if values are empty or rnot
+    if(!email || !password) {
+      return res.status(400).json({error: inputFieldMissingError});
+    }
+
     // Check if the email exists
     const account = await Account.query().findOne({ email: req.body.email });
     if (!account) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: invalidCredentialsError });
     }
 
     // Compare passwords
     const passwordMatch = await bcrypt.compare(req.body.password, account.password);
     if (!passwordMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: invalidCredentialsError });
     }
 
     const secret = process.env.SECRET;
@@ -66,7 +97,7 @@ router.post('/login', async (req, res) => {
     //TODO: do something with token? save it?
   } catch(e) {
     console.log(e);
-    res.status(500).json({ error: 'Internal server error' }); 
+    res.status(500).json({ error: internalServerError }); 
   }
 });
 
@@ -76,11 +107,11 @@ router.get('/account', verifyToken, async (req, res) => {
     // Fetch account details using decoded token
     const account = await Account.findOne({ email: req.account.email });
     if (!account) {
-      return res.status(404).json({ error: 'Account not found' });
+      return res.status(404).json({ error: accountNotFoundError });
     }
     res.status(200).json({ email: user.email });
   } catch (error) {
-    res.status(500).json({ error: 'Internal server error' });
+    res.status(500).json({ error: internalServerError });
   }
 });
 
