@@ -27,42 +27,36 @@ router.post('/register', async (req, res) => {
 
     //Check if values are empty or rnot
     if(!email || !password) {
-      return res.status(400).json({error: inputFieldMissingError});
+      return res.status(400).json({success: false, error: inputFieldMissingError});
     }
 
     //Check if user already exists
     const account = await Account.query().findOne({ email });
     if(account) {
-      return res.status(400).json({error: emailAlreadyExistsError});
+      return res.status(400).json({success: false, error: emailAlreadyExistsError});
     }
 
     if(!isEmail(email)) {
-      return res.status(400).json({error: emailFormatInvalidError});
+      return res.status(400).json({success: false, error: emailFormatInvalidError});
     }
 
     if(!isStrongPassword(password)) {
-      return res.status(400).json({error: weakPasswordError});
+      return res.status(400).json({success: false, error: weakPasswordError});
     }
 
     //Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    //Create a new account
-    const accountInstance = new Account({
-      email: email,
-      password: hashedPassword,
-    });
-
-    // Now, insert the account instance into the database
-    const newAccount = await Account.query().insert({
+    // Save account
+    await Account.query().insert({
       email: req.body.email,
       password: hashedPassword,
     });
 
-    res.status(201).json({ message: accountRegistrationSuccess });
+    res.status(201).json({success: true, message: accountRegistrationSuccess });
   } catch(e) {
     console.log(e);
-    res.status(500).json({ error: internalServerError });
+    res.status(500).json({success: false, error: internalServerError });
   }
 });
 
@@ -70,34 +64,32 @@ router.post('/login', async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
+    const secret = process.env.SECRET;
 
     //Check if values are empty or rnot
     if(!email || !password) {
-      return res.status(400).json({error: inputFieldMissingError});
+      return res.status(400).json({success: false, error: inputFieldMissingError});
     }
 
     // Check if the email exists
     const account = await Account.query().findOne({ email: req.body.email });
     if (!account) {
-      return res.status(401).json({ error: invalidCredentialsError });
+      return res.status(401).json({success: false, error: invalidCredentialsError });
     }
 
     // Compare passwords
     const passwordMatch = await bcrypt.compare(req.body.password, account.password);
     if (!passwordMatch) {
-      return res.status(401).json({ error: invalidCredentialsError });
+      return res.status(401).json({success: false, error: invalidCredentialsError });
     }
 
-    const secret = process.env.SECRET;
-
     // Generate JWT token
-    //TODO: modify secret
     const token = jwt.sign({ email: account.email }, secret);
-    res.status(200).json({ token });
+    res.status(200).json({success: true, token });
     //TODO: do something with token? save it?
   } catch(e) {
     console.log(e);
-    res.status(500).json({ error: internalServerError }); 
+    res.status(500).json({success: false, error: internalServerError }); 
   }
 });
 
@@ -105,13 +97,14 @@ router.post('/login', async (req, res) => {
 router.get('/account', verifyToken, async (req, res) => {
   try {
     // Fetch account details using decoded token
-    const account = await Account.findOne({ email: req.account.email });
+    const account = await Account.query().findOne({ email: req.account.email });
+    
     if (!account) {
-      return res.status(404).json({ error: accountNotFoundError });
+      return res.status(404).json({success: false, error: accountNotFoundError });
     }
-    res.status(200).json({ email: user.email });
+    res.status(200).json({success: true, email: account.email });
   } catch (error) {
-    res.status(500).json({ error: internalServerError });
+    res.status(500).json({success: false, error: internalServerError });
   }
 });
 
