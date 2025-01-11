@@ -2,6 +2,7 @@ import { Model } from 'objection';
 import { Device } from './device.js';
 import { Zone } from './zone.js';
 import { Client } from './client.js';
+import { Partition } from './partition.js';
 export class Account extends Model {
   // Specify the table name
   static get tableName() {
@@ -49,7 +50,15 @@ export class Account extends Model {
           from: 'accounts.id',
           to: 'clients.account_id',
         }
-      }
+      },
+      partitions: {
+        relation: Model.HasManyRelation,
+        modelClass: Partition,
+        join: {
+          from: 'accounts.id',
+          to: 'partitions.account_id',
+        }
+      },
     };
   }
 }
