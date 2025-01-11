@@ -5,8 +5,8 @@
 export const up = function (knex) {
   return knex.schema.createTable('users', (table) => {
     table.increments('id').primary(); // id INTEGER PRIMARY KEY AUTOINCREMENT
-    table.integer('number').notNullable().unique(); // number INTEGER NOT NULL UNIQUE
-    table.string('name').notNullable().unique(); // name TEXT NOT NULL UNIQUE
+    table.integer('number').notNullable(); // number INTEGER NOT NULL
+    table.string('name').notNullable(); // name TEXT NOT NULL
     table
       .integer('device_id')
       .unsigned()
