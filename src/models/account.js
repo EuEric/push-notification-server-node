@@ -1,6 +1,7 @@
 import { Model } from 'objection';
 import { Device } from './device.js';
 import { Zone } from './zone.js';
+import { Client } from './client.js';
 export class Account extends Model {
   // Specify the table name
   static get tableName() {
@@ -39,6 +40,14 @@ export class Account extends Model {
         join: {
           from: 'accounts.id',
           to: 'zones.account_id',
+        }
+      },
+      clients: {
+        relation: Model.HasManyRelation,
+        modelClass: Client,
+        join: {
+          from: 'accounts.id',
+          to: 'clients.account_id',
         }
       }
     };
