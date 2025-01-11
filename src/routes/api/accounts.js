@@ -60,7 +60,7 @@ router.post('/login', async (req, res) => {
 
     //Check if values are empty or rnot
     if(!email || !password) {
-      return res.status(400).json({success: false, message: constants.inputFieldMissingError});
+      return res.status(400).json({success: false, message: constants.inputFieldError});
     }
 
     // Check if the email exists

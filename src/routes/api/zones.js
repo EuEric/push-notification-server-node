@@ -33,10 +33,10 @@ router.post('', verifyToken, async (req, res) => {
     return res.json({ success: true, zone });
   } catch(e) {
     if (e.code === 'ER_DUP_ENTRY') {
-      return res.status(500).json({success: false, message: constants.duplicate_device_error});
+      return res.status(500).json({success: false, message: constants.duplicateFoundError});
     }
     console.log(e);
-    return res.status(500).json({success: false, message: constants.default_error_message});
+    return res.status(500).json({success: false, message: constants.internalServerError});
   }
 });
 
@@ -44,7 +44,7 @@ router.get('', verifyToken, async (req, res) => {
   try {
     Account.query().findOne({ email: req.account.email }).withGraphFetched('zones').then((account) => res.json({success: true, zones: account.zones ? account.zones : []}));
   } catch(e) {
-    res.status(500).json({success: false, message: constants.default_error_message});
+    res.status(500).json({success: false, message: constants.internalServerError});
   }
 });
 
@@ -54,7 +54,7 @@ router.get('/:id', verifyToken, verifyZoneOwnership, (req, res) => {
       'No zone found'
     }));
   } catch(e) {
-    res.status(500).json({success: false, message: constants.default_error_message});
+    res.status(500).json({success: false, message: constants.internalServerError});
   }
 });
 
@@ -82,16 +82,16 @@ router.put('/:id', verifyToken, verifyZoneOwnership, async (req, res) => {
     .patch({name, number})
     .then((count) => {
       if(count === 0) {
-        return res.status(404).json({success: false, message: constants.device_not_found});
+        return res.status(404).json({success: false, message: constants.zoneNotFoundError});
       }
       res.json({ success: true, id });
     })
     .catch((e) => {
       console.log(e);
       if (e.code === 'ER_DUP_ENTRY') {
-        return res.json({success: false, message: constants.duplicate_device_error});
+        return res.json({success: false, message: constants.duplicateFoundError});
       }
-      res.json({success: false, message: constants.default_error_message});
+      res.json({success: false, message: constants.internalServerError});
     })
 });
 
@@ -99,16 +99,16 @@ router.delete('/:id', verifyToken, verifyZoneOwnership, (req, res) => {
   Zone.query().deleteById(req.params.id)
     .then((count) => {
       if (count === 0) {
-        return res.status(404).json({success: false, message: constants.device_not_found});
+        return res.status(404).json({success: false, message: constants.zoneNotFoundError});
       }
-      res.json({success: true, message: constants.deviceDeletionSuccess});
+      res.json({success: true, message: constants.zoneDeletionSuccess});
     })
     .catch((e) => {
       if (e.code === 'ER_TRUNCATED_WRONG_VALUE') {
         return res.status(400).json({success: false, message: constants.inputFieldError});
       }
 
-      res.status(500).json({success: false, message: constants.default_error_message});
+      res.status(500).json({success: false, message: constants.internalServerError});
     });
 });
 

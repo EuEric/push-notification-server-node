@@ -1,9 +1,9 @@
 import express from 'express';
 import { knex } from '../../db/db.js'
+import constants  from '../../constants/api_constants.js';
 const router = express.Router();
-const default_error_message = 'An unknown error occurred';
-const device_not_found = 'Device not found';
-const duplicate_device_error = 'Duplicate found: phone number or token already exists';
+
+//TODO: modify this as well
 
 router.post('', async (req, res) => {
   // TODO: Implementation
@@ -16,10 +16,10 @@ router.post('', async (req, res) => {
   res.json({ success: true, id });
   } catch(e) {
     if (e.code === 'ER_DUP_ENTRY') {
-      return res.json({success: false, message: duplicate_device_error});
+      return res.json({success: false, message: constants.duplicateFoundError});
     }
     console.log(e);
-    res.json({success: false, message: default_error_message});
+    res.json({success: false, message: constants.internalServerError});
   }
 });
 
@@ -27,7 +27,7 @@ router.get('', (req, res) => {
   try {
     knex.select().from('devices').then((devices) => res.json({success: true, devices}));
   } catch(e) {
-    res.status(500).json({success: false, message: default_error_message});
+    res.status(500).json({success: false, message: constants.internalServerError});
   }
 });
 
@@ -37,7 +37,7 @@ router.get('/:id', (req, res) => {
       .where('id', req.params.id)
       .then((device) => res.json({successs:true, device: device[0] ? device[0] : 'No device found'}));
   } catch(e) {
-    res.status(500).json({success: false, message: default_error_message});
+    res.status(500).json({success: false, message: constants.internalServerError});
   }
 });
 
@@ -53,15 +53,15 @@ router.put('/:id', (req, res) => {
     })
     .then((count) => {
       if(count === 0) {
-        return res.status(404).json({success: false, message: device_not_found});
+        return res.status(404).json({success: false, message: constants.deviceNotFoundError});
       }
       res.json({ success: true, id });
     })
     .catch((e) => {
       if (e.code === 'ER_DUP_ENTRY') {
-        return res.json({success: false, message: duplicate_device_error});
+        return res.json({success: false, message: constants.duplicateFoundError});
       }
-      res.json({success: false, message: default_error_message});
+      res.json({success: false, message: constants.internalServerError});
     })
 });
 
@@ -71,16 +71,16 @@ router.delete('/:id', (req, res) => {
     .del()
     .then((count) => {
       if (count === 0) {
-        return res.status(404).json({success: false, message: device_not_found});
+        return res.status(404).json({success: false, message: constants.deviceNotFoundError});
       }
-      res.json({success: true, message: 'Device deleted successfully'});
+      res.json({success: true, message: constants.deviceDeletionSuccess});
     })
     .catch((e) => {
       if (e.code === 'ER_TRUNCATED_WRONG_VALUE') {
-        return res.status(400).json({success: false, message: 'Wrong input id format'});
+        return res.status(400).json({success: false, message: constants.inputFieldError});
       }
 
-      res.status(500).json({success: false, message: default_error_message});
+      res.status(500).json({success: false, message: constants.internalServerError});
     });
 });
 
