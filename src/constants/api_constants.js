@@ -11,6 +11,7 @@ const constants = {
   device_not_found: 'Device not found',
   duplicate_device_error: 'Duplicate found: phone number or token already exists',
   duplicateFoundError: 'Duplicate found',
+  deviceDeletionSuccess: 'Device deleted successfully',
 };
 
 export default constants;
