@@ -6,19 +6,11 @@ import { verifyToken } from '../../middleware/token_verify.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { Account } from '../../models/account.js'
+import constants  from '../../constants/api_constants.js';
 const router = express.Router();
 //Needed to specify multiple paths, because by default, config will look for a file called .env in the current working directory.
 //For migrations the cwd will be src/db, and generally for running the main app, the cwd will be /src
 dotenv.config({ path: ['../../.env', '../.env'] })
-const internalServerError = 'Internal server error';
-const invalidCredentialsError = 'Invalid credentials';
-const inputFieldMissingError = 'An input field missing';
-const emailAlreadyExistsError = 'Email already exists';
-const emailFormatInvalidError = 'Email format invalid';
-const weakPasswordError = 'Password is not strong enough';
-const accountNotFoundError = 'Account not found';
-
-const accountRegistrationSuccess = 'Account registered successfully';
 
 router.post('/register', async (req, res) => {
   try {
@@ -27,21 +19,21 @@ router.post('/register', async (req, res) => {
 
     //Check if values are empty or rnot
     if(!email || !password) {
-      return res.status(400).json({success: false, error: inputFieldMissingError});
+      return res.status(400).json({success: false, message: constants.inputFieldError});
     }
 
     //Check if user already exists
     const account = await Account.query().findOne({ email });
     if(account) {
-      return res.status(400).json({success: false, error: emailAlreadyExistsError});
+      return res.status(400).json({success: false, message: constants.emailAlreadyExistsError});
     }
 
     if(!isEmail(email)) {
-      return res.status(400).json({success: false, error: emailFormatInvalidError});
+      return res.status(400).json({success: false, message: constants.emailFormatInvalidError});
     }
 
     if(!isStrongPassword(password)) {
-      return res.status(400).json({success: false, error: weakPasswordError});
+      return res.status(400).json({success: false, message: constants.weakPasswordError});
     }
 
     //Hash password
@@ -49,14 +41,14 @@ router.post('/register', async (req, res) => {
 
     // Save account
     await Account.query().insert({
-      email: req.body.email,
+      email: email,
       password: hashedPassword,
     });
 
-    res.status(201).json({success: true, message: accountRegistrationSuccess });
+    res.status(201).json({success: true, message: constants.accountRegistrationSuccess });
   } catch(e) {
     console.log(e);
-    res.status(500).json({success: false, error: internalServerError });
+    res.status(500).json({success: false, message: constants.internalServerError });
   }
 });
 
@@ -68,19 +60,19 @@ router.post('/login', async (req, res) => {
 
     //Check if values are empty or rnot
     if(!email || !password) {
-      return res.status(400).json({success: false, error: inputFieldMissingError});
+      return res.status(400).json({success: false, message: constants.inputFieldMissingError});
     }
 
     // Check if the email exists
     const account = await Account.query().findOne({ email: req.body.email });
     if (!account) {
-      return res.status(401).json({success: false, error: invalidCredentialsError });
+      return res.status(401).json({success: false, message: constants.invalidCredentialsError });
     }
 
     // Compare passwords
     const passwordMatch = await bcrypt.compare(req.body.password, account.password);
     if (!passwordMatch) {
-      return res.status(401).json({success: false, error: invalidCredentialsError });
+      return res.status(401).json({success: false, message: constants.invalidCredentialsError });
     }
 
     // Generate JWT token
@@ -89,7 +81,7 @@ router.post('/login', async (req, res) => {
     //TODO: do something with token? save it?
   } catch(e) {
     console.log(e);
-    res.status(500).json({success: false, error: internalServerError }); 
+    res.status(500).json({success: false, message: constants.internalServerError }); 
   }
 });
 
@@ -100,11 +92,11 @@ router.get('/account', verifyToken, async (req, res) => {
     const account = await Account.query().findOne({ email: req.account.email });
     
     if (!account) {
-      return res.status(404).json({success: false, error: accountNotFoundError });
+      return res.status(404).json({success: false,message: constants.accountNotFoundError });
     }
     res.status(200).json({success: true, email: account.email });
   } catch (error) {
-    res.status(500).json({success: false, error: internalServerError });
+    res.status(500).json({success: false, message: constants.internalServerError });
   }
 });
 
