@@ -20,5 +20,8 @@ export const up = async function(knex) {
  * @returns { Promise<void> }
  */
 export const down = async function(knex) {
-  await knex.schema.dropTableIfExists('devices'); // Drop the devices table
+  await knex.schema.alterTable('devices', (table) => {
+    table.dropForeign('account_id');
+    table.dropColumn('account_id'); // Removes the account_id column
+  });
 };
