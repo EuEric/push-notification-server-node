@@ -16,9 +16,10 @@ router.post('/register', async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
+    const token = req.body.token
 
     //Check if values are empty or rnot
-    if(!email || !password) {
+    if(!email || !password || !token) {
       return res.status(400).json({success: false, message: constants.inputFieldError});
     }
 
@@ -43,6 +44,7 @@ router.post('/register', async (req, res) => {
     await Account.query().insert({
       email: email,
       password: hashedPassword,
+      token: token,
     });
 
     res.status(201).json({success: true, message: constants.accountRegistrationSuccess });

@@ -13,10 +13,11 @@ export class Account extends Model {
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['email', 'password'],
+      required: ['email', 'password', 'token'],
       properties: {
         id: { type: 'integer' },
         email: { type: 'string', format: 'email', maxLength: 255 },
+        token: { type: 'string', maxLength: 255 },
         password: { type: 'string', maxLength: 255 },
         created_at: { type: 'string', format: 'date-time' },
         updated_at: { type: 'string', format: 'date-time' },
