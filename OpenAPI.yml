@@ -7,11 +7,14 @@ servers:
     description: Production server
   - url: 185.92.192.88:3001/dev/api
     description: Development server
+security:
+  - bearerAuth: [] # All endpoints now require the bearerAuth security scheme
 paths:
   /register:
     post:
       summary: Register account.
       description: Registers a new account for MobyMe.
+      security: []
       tags:
         - Account
       requestBody:
@@ -76,6 +79,7 @@ paths:
     post:
       summary: Account Login
       description: Authenticates an account and return a JWT token upon successful login.
+      security: []
       tags:
         - Account
       requestBody:
@@ -160,6 +164,12 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/DuplicateEntryError'
                   - $ref : '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Internal Server Error.
           content:
@@ -185,6 +195,12 @@ paths:
                     example: true
                   devices:
                     $ref: '#/components/schemas/Zones'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving zones.
           content:
@@ -221,6 +237,12 @@ paths:
                       - $ref: '#/components/schemas/Zone'
                       - type: string
                         example: No zone found.
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving the zone.
           content:
@@ -281,6 +303,12 @@ paths:
                 oneOf:
                  - $ref: '#/components/schemas/DuplicateEntryError'
                  - $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -333,6 +361,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -374,6 +408,12 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/DuplicateEntryError'
                   - $ref : '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Internal Server Error.
           content:
@@ -399,6 +439,12 @@ paths:
                     example: true
                   devices:
                     $ref: '#/components/schemas/Partitions'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving partitions.
           content:
@@ -435,6 +481,12 @@ paths:
                       - $ref: '#/components/schemas/Partition'
                       - type: string
                         example: No partition found.
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving the partition.
           content:
@@ -495,6 +547,12 @@ paths:
                 oneOf:
                  - $ref: '#/components/schemas/DuplicateEntryError'
                  - $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -547,6 +605,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -588,6 +652,12 @@ paths:
                 oneOf:
                   - $ref: '#/components/schemas/DuplicateEntryError'
                   - $ref : '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Internal Server Error.
           content:
@@ -613,6 +683,12 @@ paths:
                     example: true
                   devices:
                     $ref: '#/components/schemas/Clients'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving clients.
           content:
@@ -649,6 +725,12 @@ paths:
                       - $ref: '#/components/schemas/Client'
                       - type: string
                         example: No client found.
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving the client.
           content:
@@ -709,6 +791,12 @@ paths:
                 oneOf:
                  - $ref: '#/components/schemas/DuplicateEntryError'
                  - $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -761,6 +849,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -801,6 +895,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DuplicateEntryError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -826,6 +926,12 @@ paths:
                     example: true
                   devices:
                     $ref: '#/components/schemas/Devices'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving devices.
           content:
@@ -862,6 +968,12 @@ paths:
                       - $ref: '#/components/schemas/Device'
                       - type: string
                         example: No device found.
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving the device.
           content:
@@ -920,6 +1032,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DuplicateEntryError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -972,6 +1090,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
@@ -1035,6 +1159,12 @@ paths:
                   message:
                     type: string
                     example: Invalid FCM registration token provided. Please check the token.
+        # '401':
+        #   description: Unauthorized - Invalid token or missing token.
+        #   content:
+        #     application/json:
+        #       schema:
+        #         $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unexpected error while sending the notification.
           content:
@@ -1043,6 +1173,11 @@ paths:
                 $ref: '#/components/schemas/InternalServerError'
 
 components:
+  securitySchemes:
+    bearerAuth: # Name of the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # Optional, indicates the token format
   schemas:
     DuplicateEntryError:
       type: object
@@ -1245,4 +1380,10 @@ components:
         error:
           type: string
           example: "Invalid input format"
+    UnauthorizedError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Unauthorized"
 
