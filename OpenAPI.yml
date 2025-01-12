@@ -8,6 +8,124 @@ servers:
   - url: 185.92.192.88:3001/dev/api
     description: Development server
 paths:
+  /register:
+    post:
+      summary: Register account.
+      description: Registers a new account for MobyMe.
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/AccountRequestBody'
+      responses:
+        '201':
+          description: Account registration success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Account registered successfully
+        '400' :
+          description: Bad Request - Various error conditions
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: "Email already exists"
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: "Invalid email format"
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: "Weak password. Please choose a stronger password"
+                  - $ref : '#/components/schemas/InvalidInputError'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+                    
+  /login:
+    post:
+      summary: Account Login
+      description: Authenticates an account and return a JWT token upon successful login.
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequestBody'
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  token:
+                    type: string
+                    description: Authentication token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        400:
+          description: Input fields are missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref : '#/components/schemas/InvalidInputError'
+        401:
+          description: Invalid credentials provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid email or password"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref : '#/components/schemas/InternalServerError'
+
+
   /zones:
     post:
       summary: Add a new zone.
@@ -409,7 +527,221 @@ paths:
                     example: true
                   message:
                     type: string
-                    example: Zone deleted successfully.
+                    example: Partition deleted successfully.
+        '404':
+          description: Zone not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Zone not found.
+        '400':
+          description: Invalid ID format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidInputError'
+        '500':
+          description: Unknown error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /clients:
+    post:
+      summary: Add a new client.
+      description: Inserts a new client record into the database.
+      tags:
+        - Client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequestBody'           
+      responses:
+        '200':
+          description: Client added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DuplicateEntryError'
+                  - $ref : '#/components/schemas/InvalidInputError'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    get:
+      summary: Get all clients.
+      description: Retrieves a list of all clients.
+      tags:
+        - Client
+      responses:
+        '200':
+          description: List of clients retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  devices:
+                    $ref: '#/components/schemas/Clients'
+        '500':
+          description: Error while retrieving clients.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /clients/{id}:
+    get:
+      summary: Get client by ID.
+      description: Retrieves details of a specific client by ID.
+      tags:
+        - Client
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the client to retrieve.
+      responses:
+        '200':
+          description: Client retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  device:
+                    oneOf:
+                      - $ref: '#/components/schemas/Client'
+                      - type: string
+                        example: No client found.
+        '500':
+          description: Error while retrieving the client.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    put:
+      summary: Update a client.
+      description: Updates a client's details by ID.
+      tags:
+        - Client
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the client to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequestBody'
+      responses:
+        '200':
+          description: Client updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '404':
+          description: Client not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Client not found.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                 - $ref: '#/components/schemas/DuplicateEntryError'
+                 - $ref: '#/components/schemas/InvalidInputError'
+        '500':
+          description: Unknown error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    delete:
+      summary: Delete a client.
+      description: Deletes a client by its ID.
+      tags:
+        - Client
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the client to delete.
+      responses:
+        '200':
+          description: Client deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Client deleted successfully.
         '404':
           description: Zone not found.
           content:
@@ -721,6 +1053,20 @@ components:
         error:
           type: string
           example: "Duplicate entry found"
+    AccountRequestBody:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          example: "StrongPassword123*"
     DeviceRequestBody:
       type: object
       required:
@@ -756,7 +1102,19 @@ components:
           example: "Partition 1"
         number:
           type: integer
-          example: 10
+          example: 
+    ClientRequestBody:
+      type: object
+      required:
+      - account_name
+      - number
+      properties:
+        account_name:
+          type: string
+          example: "Test client"
+        number:
+          type: integer
+          example: 1234
         
     Device:
       type: object
@@ -836,6 +1194,32 @@ components:
       type: array
       items:
         $ref: '#/components/schemas/Partition'
+    Client:
+      type: object
+      required:
+      - id
+      - account_name
+      - number
+      - account_id
+      properties:
+        id:
+          type: integer
+          example: 1
+        account_name:
+          type: string
+          example: "Test client"
+        number:
+          type: integer
+          example: 1234
+        account_id:
+          type: integer
+          description: |
+            References the `id` of an `Account` object.
+          example: 1
+    Clients:
+      type: array
+      items:
+        $ref: '#/components/schemas/Client'
     InternalServerError:
       type: object
       required:
@@ -848,7 +1232,7 @@ components:
           example: false
         message:
           type: string
-          example: An unexpected error occurred while sending the notification.
+          example: An unexpected error occurred.
         error:
           type: string
           example: "Error details."
