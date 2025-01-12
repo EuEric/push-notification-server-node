@@ -24,8 +24,6 @@ export class Device extends Model {
 
   // Define any relationships (if needed)
   static get relationMappings() {
-    const Account = require('./account'); // Import the Account model
-
     return {
       account: {
         relation: Model.BelongsToOneRelation,

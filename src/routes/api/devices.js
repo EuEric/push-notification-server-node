@@ -4,7 +4,7 @@ import { Account } from '../../models/account.js'
 import { verifyToken } from '../../middleware/token_verify.js';
 import {createOwnershipMiddleware} from '../../middleware/ownership.js';
 import constants  from '../../constants/api_constants.js';
-import { isHexadecimal } from 'validator';
+import isHexadecimal from 'validator/lib/isHexadecimal.js';
 const router = express.Router();
 
 const verifyDeviceOwnership = createOwnershipMiddleware({
@@ -31,14 +31,16 @@ router.post('', verifyToken, async (req, res) => {
     const device = await Device.query().insert({ identifier, account_id: account.id});
     return res.json({ success: true, device });
   } catch(e) {
-    if (e.code === 'ER_DUP_ENTRY') {
+    // Dup entry will be skipped for some reason
+    // However it's better to not expose this for device
+    if (e.code == 'ER_DUP_ENTRY') {
       return res.json({success: false, message: constants.duplicateFoundError});
     }
     res.json({success: false, message: constants.internalServerError});
   }
 });
 
-router.get('', verifyToken, verifyDeviceOwnership, (req, res) => {
+router.get('', verifyToken, (req, res) => {
   try {
     Account.query().findOne({ email: req.account.email }).withGraphFetched('devices').then((account) => res.json({success: true, devices: account.devices ? account.devices : []}));
   } catch(e) {
