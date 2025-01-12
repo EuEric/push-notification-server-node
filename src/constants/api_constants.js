@@ -16,6 +16,10 @@ const constants = {
   zoneDeletionSuccess: 'Zone deleted successfully',
   clientDeletionSuccess: 'Client deleted successfully',
   partitionDeletionSuccess: 'Partition deleted successfully',
+  noZoneFound: 'No zone found',
+  noClientFound: 'No client found',
+  noDeviceFound: 'No device found',
+  noPartitionFound: 'No partition found',
 };
 
 export default constants;
