@@ -1,5 +1,6 @@
 import { Model } from 'objection';
 import { Account }  from './account.js';
+import { User } from './user.js'
 
 export class Device extends Model {
   // Specify the table name
@@ -32,6 +33,14 @@ export class Device extends Model {
           from: 'devices.account_id',
           to: 'accounts.id',
         },
+      },
+      users: {
+        relation: Model.HasManyRelation,
+        modelClass: User,
+        join: {
+          from: 'devices.id',
+          to: 'users.device_id',
+        }
       },
     };
   }

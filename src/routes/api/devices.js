@@ -21,7 +21,6 @@ router.post('', verifyToken, async (req, res) => {
       return res.status(400).json({success: false, message: constants.inputFieldError});
     }
     const account = await Account.query().findOne({ email: req.account.email }).withGraphFetched('devices');
-
     for (const device of account.devices) {
       if (device.identifier == identifier) {
         return res.status(400).json({ success: false, message: constants.duplicateFoundError });
