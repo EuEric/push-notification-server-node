@@ -51,7 +51,7 @@ router.get('', verifyToken, async (req, res) => {
 router.get('/:id', verifyToken, verifyZoneOwnership, (req, res) => {
   try {
     Zone.query().findOne({id: req.params.id}).then((zone) => res.json({success: true, zone: zone ? zone : 
-      'No zone found'
+      constants.noZoneFound
     }));
   } catch(e) {
     res.status(500).json({success: false, message: constants.internalServerError});
@@ -59,57 +59,51 @@ router.get('/:id', verifyToken, verifyZoneOwnership, (req, res) => {
 });
 
 router.put('/:id', verifyToken, verifyZoneOwnership, async (req, res) => {
-  var id = req.params.id;
-  const name = req.body.name;
-  const number = req.body.number;
+  try {
+    var id = req.params.id;
+    const name = req.body.name;
+    const number = req.body.number;
 
-  //Validate input fields
-  if(!name || !number || !isInt(number)) {
-    return res.status(400).json({success: false, message: constants.inputFieldError});
-  }
-
-  const account = await Account.query().findOne({ email: req.account.email }).withGraphFetched('zones');
-
-  //Check if zone with same (name, number) already exists
-  for (const zone of account.zones) {
-    if (zone.id != id && (zone.number == number || zone.name == name)) {
-      return res.status(400).json({ success: false, message: constants.duplicateFoundError });
+    //Validate input fields
+    if(!name || !number || !isInt(number)) {
+      return res.status(400).json({success: false, message: constants.inputFieldError});
     }
-  }
 
-  Zone.query()
-    .findById(id)
-    .patch({name, number})
-    .then((count) => {
-      if(count === 0) {
-        return res.status(404).json({success: false, message: constants.zoneNotFoundError});
+    const account = await Account.query().findOne({ email: req.account.email }).withGraphFetched('zones');
+
+    //Check if zone with same (name, number) already exists
+    for (const zone of account.zones) {
+      if (zone.id != id && (zone.number == number || zone.name == name)) {
+        return res.status(400).json({ success: false, message: constants.duplicateFoundError });
       }
-      res.json({ success: true, id });
-    })
-    .catch((e) => {
-      console.log(e);
-      if (e.code === 'ER_DUP_ENTRY') {
-        return res.json({success: false, message: constants.duplicateFoundError});
-      }
-      res.json({success: false, message: constants.internalServerError});
-    })
+    }
+
+    const count = await Zone.query().findById(id).patch({name, number});
+    if(count == 0) {
+      return res.status(404).json({success: false, message: constants.zoneNotFoundError});
+    }
+    res.json({ success: true, id });
+  } catch(e)  {
+    if (e.code === 'ER_DUP_ENTRY') {
+      return res.json({success: false, message: constants.duplicateFoundError});
+    }
+    res.json({success: false, message: constants.internalServerError});
+  }
 });
 
-router.delete('/:id', verifyToken, verifyZoneOwnership, (req, res) => {
-  Zone.query().deleteById(req.params.id)
-    .then((count) => {
-      if (count === 0) {
-        return res.status(404).json({success: false, message: constants.zoneNotFoundError});
-      }
-      res.json({success: true, message: constants.zoneDeletionSuccess});
-    })
-    .catch((e) => {
-      if (e.code === 'ER_TRUNCATED_WRONG_VALUE') {
-        return res.status(400).json({success: false, message: constants.inputFieldError});
-      }
-
-      res.status(500).json({success: false, message: constants.internalServerError});
-    });
+router.delete('/:id', verifyToken, verifyZoneOwnership, async (req, res) => {
+  try {
+    const count = await Zone.query().deleteById(req.params.id);
+    if(count == 0) {
+      return res.status(404).json({success: false, message: constants.zoneNotFoundError});
+    }
+    res.json({success: true, message: constants.zoneDeletionSuccess});
+  } catch(e) {
+    if (e.code === 'ER_TRUNCATED_WRONG_VALUE') {
+      return res.status(400).json({success: false, message: constants.inputFieldError});
+    }
+    res.status(500).json({success: false, message: constants.internalServerError});
+  }
 });
 
 export default router;

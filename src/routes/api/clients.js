@@ -51,7 +51,7 @@ router.get('', verifyToken, async (req, res) => {
 router.get('/:id', verifyToken, verifyClientOwnership, (req, res) => {
   try {
     Client.query().findOne({id: req.params.id}).then((client) => res.json({success: true, client: client ? client : 
-      'No client found'
+      constants.noClientFound
     }));
   } catch(e) {
     res.status(500).json({success: false, message: constants.internalServerError});
@@ -59,57 +59,52 @@ router.get('/:id', verifyToken, verifyClientOwnership, (req, res) => {
 });
 
 router.put('/:id', verifyToken, verifyClientOwnership, async (req, res) => {
-  var id = req.params.id;
-  const account_name = req.body.account_name;
-  const number = req.body.number;
+  try {
+    var id = req.params.id;
+    const account_name = req.body.account_name;
+    const number = req.body.number;
 
-  //Validate input fields
-  if(!account_name || !number || !isInt(number)) {
-    return res.status(400).json({success: false, message: constants.inputFieldError});
-  }
-
-  const account = await Account.query().findOne({ email: req.account.email }).withGraphFetched('clients');
-
-  //Check if client with same (account_name, number) already exists
-  for (const client of account.clients) {
-    if (client.id != id && (client.number == number || client.account_name == account_name)) {
-      return res.status(400).json({ success: false, message: constants.duplicateFoundError });
+    //Validate input fields
+    if(!account_name || !number || !isInt(number)) {
+      return res.status(400).json({success: false, message: constants.inputFieldError});
     }
+
+    const account = await Account.query().findOne({ email: req.account.email }).withGraphFetched('clients');
+
+    //Check if client with same (account_name, number) already exists
+    for (const client of account.clients) {
+      if (client.id != id && (client.number == number || client.account_name == account_name)) {
+        return res.status(400).json({ success: false, message: constants.duplicateFoundError });
+      }
+    }
+
+    const count = await Client.query().findById(id).patch({account_name, number});
+    if(count == 0) {
+      return res.status(404).json({success: false, message: constants.clientNotFoundError});
+    }
+    res.json({ success: true, id });
+  } catch(e)  {
+    if (e.code === 'ER_DUP_ENTRY') {
+      return res.json({success: false, message: constants.duplicateFoundError});
+    }
+    res.json({success: false, message: constants.internalServerError});
   }
-
-  Client.query()
-    .findById(id)
-    .patch({account_name, number})
-    .then((count) => {
-      if(count === 0) {
-        return res.status(404).json({success: false, message: constants.clientNotFoundError});
-      }
-      res.json({ success: true, id });
-    })
-    .catch((e) => {
-      console.log(e);
-      if (e.code === 'ER_DUP_ENTRY') {
-        return res.json({success: false, message: constants.duplicateFoundError});
-      }
-      res.json({success: false, message: constants.internalServerError});
-    })
 });
 
-router.delete('/:id', verifyToken, verifyClientOwnership, (req, res) => {
-  Client.query().deleteById(req.params.id)
-    .then((count) => {
-      if (count === 0) {
-        return res.status(404).json({success: false, message: constants.clientNotFoundError});
-      }
-      res.json({success: true, message: constants.clientDeletionSuccess});
-    })
-    .catch((e) => {
-      if (e.code === 'ER_TRUNCATED_WRONG_VALUE') {
-        return res.status(400).json({success: false, message: constants.inputFieldError});
-      }
-
-      res.status(500).json({success: false, message: constants.internalServerError});
-    });
+router.delete('/:id', verifyToken, verifyClientOwnership, async (req, res) => {
+  try {
+    const count = await Client.query().deleteById(req.params.id);
+    if(count == 0) {
+      return res.status(404).json({success: false, message: constants.clientNotFoundError});
+    }
+    res.json({success: true, message: constants.clientDeletionSuccess});
+  } catch(e) {
+    if (e.code === 'ER_TRUNCATED_WRONG_VALUE') {
+      return res.status(400).json({success: false, message: constants.inputFieldError});
+    }
+    res.status(500).json({success: false, message: constants.internalServerError});
+  }
 });
+
 
 export default router;
