@@ -33,7 +33,7 @@ router.post('', verifyToken, async (req, res) => {
     return res.json({ success: true, client });
   } catch(e) {
     if (e.code === 'ER_DUP_ENTRY') {
-      return res.status(500).json({success: false, message: constants.duplicateFoundError});
+      return res.status(400).json({success: false, message: constants.duplicateFoundError});
     }
     console.log(e);
     return res.status(500).json({success: false, message: constants.internalServerError});
@@ -85,7 +85,7 @@ router.put('/:id', verifyToken, verifyClientOwnership, async (req, res) => {
     res.json({ success: true, id });
   } catch(e)  {
     if (e.code === 'ER_DUP_ENTRY') {
-      return res.json({success: false, message: constants.duplicateFoundError});
+      return res.status(400).json({success: false, message: constants.duplicateFoundError});
     }
     res.json({success: false, message: constants.internalServerError});
   }

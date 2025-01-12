@@ -34,7 +34,7 @@ router.post('', verifyToken, async (req, res) => {
     // Dup entry will be skipped for some reason
     // However it's better to not expose this for device
     if (e.code == 'ER_DUP_ENTRY') {
-      return res.json({success: false, message: constants.duplicateFoundError});
+      return res.status(400).json({success: false, message: constants.duplicateFoundError});
     }
     res.json({success: false, message: constants.internalServerError});
   }
@@ -83,7 +83,7 @@ router.put('/:id', verifyToken, verifyDeviceOwnership, async (req, res) => {
     res.json({ success: true, id });
   } catch(e)  {
     if (e.code === 'ER_DUP_ENTRY') {
-      return res.json({success: false, message: constants.duplicateFoundError});
+      return res.status(400).json({success: false, message: constants.duplicateFoundError});
     }
     res.json({success: false, message: constants.internalServerError});
   }
