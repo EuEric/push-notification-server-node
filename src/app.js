@@ -35,6 +35,8 @@ import zonesRoutes from './routes/api/zones.js';
 import clientsRoutes from './routes/api/clients.js';
 //Import paritions routes
 import partitionsRoutes from './routes/api/partitions.js';
+//Import users routes
+import usersRoutes from './routes/api/users.js';
 
 // Determine the prefix based on the environment
 const devPrefix = process.env.NODE_ENV === 'development' ? '/dev/' : '/';
@@ -51,6 +53,8 @@ app.use(`${devPrefix}api/zones`, zonesRoutes);
 app.use(`${devPrefix}api/clients`, clientsRoutes);
 //Mount the partitions routes
 app.use(`${devPrefix}api/partitions`, partitionsRoutes);
+//Mount the users routes
+app.use(`${devPrefix}api/devices`, usersRoutes);
 
 // Start the server
 app.listen(port, () => {
