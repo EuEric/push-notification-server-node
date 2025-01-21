@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 import jwt from 'jsonwebtoken';
 dotenv.config({ path: ['../../.env', '../.env'] })
-const secret = process.env.SECRET;
+const secret = process.env.TOKEN_SECRET;
 
 // Middleware for JWT validation
 export function verifyToken(req, res, next) {

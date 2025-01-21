@@ -58,7 +58,7 @@ router.post('/login', async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
-    const secret = process.env.SECRET;
+    const secret = process.env.TOKEN_SECRET;
 
     //Check if values are empty or rnot
     if(!email || !password) {
