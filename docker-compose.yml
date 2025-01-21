@@ -40,6 +40,7 @@ services:
       DATABASE_USER: ${DATABASE_USER}
       DATABASE_PASSWORD: ${DATABASE_PASSWORD}
       GOOGLE_APPLICATION_CREDENTIALS: /app/service-account.json
+      TOKEN_SECRET: ${TOKEN_SECRET}
     depends_on:
       mysql:
         condition: service_healthy
