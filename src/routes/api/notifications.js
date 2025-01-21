@@ -1,7 +1,7 @@
 import express from 'express';
 import { getMessaging } from 'firebase-admin/messaging'; // Ensure this is imported correctly based on your Firebase setup
 import { knex } from '../../db/db.js'
-
+import { extractIdentifierFromMessageOrReturnNull as extractCid, parseValidCidOrReturnNull as parseCid} from '../../utils/parse/cid_utils.js';
 const router = express.Router();
 
 router.post('/send', async (req, res) => {
@@ -33,22 +33,30 @@ router.post('/send', async (req, res) => {
     }
     const token = device['token'];
 
-    const message = {
-        notification: {
-            title: 'Notification',
-            body: 'This is a Test Notification',
-        },
-        android: {
-            notification: {
-                icon: 'stock_ticker_update',
-                color: '#7e55c3',
-            },
-        },
-        token: token,
-    };
     console.log(`cid: ${cid}`);
-    console.log(message);
+    const extracted_cid = extractCid(cid);
+    console.log(`extracted cid: ${extracted_cid}`);
+    const parsed_cid = parseCid(extracted_cid);
+    console.log("parsed cid:");
+    console.log(parsed_cid);
 
+    //destructure
+    const { accountNumber, eventName, partitionNumber, zoneNumber, userNumber, cidCode } = parsed_cid;
+    const message = {
+      notification: {
+        title: eventName,
+        body: `Partition Number: ${partitionNumber}, Zone Number: ${zoneNumber}, User Number: ${userNumber}, Account Number: ${accountNumber}`,
+      },
+      android: {
+        notification: {
+          icon: 'stock_ticker_update',
+          color: '#7e55c3',
+        },
+      },
+      token: token,
+    };
+    //TODO: fix important bug, no notifications while running app!!!
+   // return res.status(200).json({success: true, message});
     try {
         await getMessaging().send(message);
         res.json({success: true, mmessage: 'Successfully sent message'});

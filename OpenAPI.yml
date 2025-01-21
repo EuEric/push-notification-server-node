@@ -7,7 +7,862 @@ servers:
     description: Production server
   - url: 185.92.192.88:3001/dev/api
     description: Development server
+security:
+  - bearerAuth: [] # All endpoints now require the bearerAuth security scheme
 paths:
+  /register:
+    post:
+      summary: Register account.
+      description: Registers a new account for MobyMe.
+      security: []
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: 
+              $ref: '#/components/schemas/AccountRequestBody'
+      responses:
+        '201':
+          description: Account registration success.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Account registered successfully
+        '400' :
+          description: Bad Request - Various error conditions
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: "Email already exists"
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: "Invalid email format"
+                  - type: object
+                    properties:
+                      success:
+                        type: boolean
+                        example: false
+                      message:
+                        type: string
+                        example: "Weak password. Please choose a stronger password"
+                  - $ref : '#/components/schemas/InvalidInputError'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+                    
+  /login:
+    post:
+      summary: Account Login
+      description: Authenticates an account and return a JWT token upon successful login.
+      security: []
+      tags:
+        - Account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AccountRequestBody'
+      responses:
+        200:
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  token:
+                    type: string
+                    description: Authentication token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        400:
+          description: Input fields are missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref : '#/components/schemas/InvalidInputError'
+        401:
+          description: Invalid credentials provided
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid email or password"
+        500:
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref : '#/components/schemas/InternalServerError'
+
+
+  /zones:
+    post:
+      summary: Add a new zone.
+      description: Inserts a new zone record into the database.
+      tags:
+        - Zone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZoneRequestBody'           
+      responses:
+        '200':
+          description: Zone added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DuplicateEntryError'
+                  - $ref : '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    get:
+      summary: Get all zones.
+      description: Retrieves a list of all zones.
+      tags:
+        - Zone
+      responses:
+        '200':
+          description: List of zones retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  devices:
+                    $ref: '#/components/schemas/Zones'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Error while retrieving zones.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /zones/{id}:
+    get:
+      summary: Get zone by ID.
+      description: Retrieves details of a specific zone by ID.
+      tags:
+        - Zone
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the zone to retrieve.
+      responses:
+        '200':
+          description: Zone retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  device:
+                    oneOf:
+                      - $ref: '#/components/schemas/Zone'
+                      - type: string
+                        example: No zone found.
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Error while retrieving the zone.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    put:
+      summary: Update a zone.
+      description: Updates a zone's details by ID.
+      tags:
+        - Zone
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the zone to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZoneRequestBody'
+      responses:
+        '200':
+          description: Zone updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '404':
+          description: Zone not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Zone not found.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                 - $ref: '#/components/schemas/DuplicateEntryError'
+                 - $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Unknown error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    delete:
+      summary: Delete a zone.
+      description: Deletes a zone by its ID.
+      tags:
+        - Zone
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the zone to delete.
+      responses:
+        '200':
+          description: Zone deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Zone deleted successfully.
+        '404':
+          description: Zone not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Zone not found.
+        '400':
+          description: Invalid ID format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Unknown error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /partitions:
+    post:
+      summary: Add a new partition.
+      description: Inserts a new partition record into the database.
+      tags:
+        - Partition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartitionRequestBody'           
+      responses:
+        '200':
+          description: Partition added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DuplicateEntryError'
+                  - $ref : '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    get:
+      summary: Get all partitions.
+      description: Retrieves a list of all partitions.
+      tags:
+        - Partition
+      responses:
+        '200':
+          description: List of partitions retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  devices:
+                    $ref: '#/components/schemas/Partitions'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Error while retrieving partitions.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /partitions/{id}:
+    get:
+      summary: Get partition by ID.
+      description: Retrieves details of a specific partition by ID.
+      tags:
+        - Partition
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the partition to retrieve.
+      responses:
+        '200':
+          description: Partition retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  device:
+                    oneOf:
+                      - $ref: '#/components/schemas/Partition'
+                      - type: string
+                        example: No partition found.
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Error while retrieving the partition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    put:
+      summary: Update a partition.
+      description: Updates a partition's details by ID.
+      tags:
+        - Partition
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the partition to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartitionRequestBody'
+      responses:
+        '200':
+          description: Partition updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '404':
+          description: Partition not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Partition not found.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                 - $ref: '#/components/schemas/DuplicateEntryError'
+                 - $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Unknown error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    delete:
+      summary: Delete a partition.
+      description: Deletes a partition by its ID.
+      tags:
+        - Partition
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the partition to delete.
+      responses:
+        '200':
+          description: Partition deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Partition deleted successfully.
+        '404':
+          description: Zone not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Zone not found.
+        '400':
+          description: Invalid ID format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Unknown error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /clients:
+    post:
+      summary: Add a new client.
+      description: Inserts a new client record into the database.
+      tags:
+        - Client
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequestBody'           
+      responses:
+        '200':
+          description: Client added successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/DuplicateEntryError'
+                  - $ref : '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Internal Server Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    get:
+      summary: Get all clients.
+      description: Retrieves a list of all clients.
+      tags:
+        - Client
+      responses:
+        '200':
+          description: List of clients retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  devices:
+                    $ref: '#/components/schemas/Clients'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Error while retrieving clients.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+  /clients/{id}:
+    get:
+      summary: Get client by ID.
+      description: Retrieves details of a specific client by ID.
+      tags:
+        - Client
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the client to retrieve.
+      responses:
+        '200':
+          description: Client retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  device:
+                    oneOf:
+                      - $ref: '#/components/schemas/Client'
+                      - type: string
+                        example: No client found.
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Error while retrieving the client.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    put:
+      summary: Update a client.
+      description: Updates a client's details by ID.
+      tags:
+        - Client
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the client to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientRequestBody'
+      responses:
+        '200':
+          description: Client updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 1
+        '404':
+          description: Client not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Client not found.
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                 - $ref: '#/components/schemas/DuplicateEntryError'
+                 - $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Unknown error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+    delete:
+      summary: Delete a client.
+      description: Deletes a client by its ID.
+      tags:
+        - Client
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: The ID of the client to delete.
+      responses:
+        '200':
+          description: Client deleted successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Client deleted successfully.
+        '404':
+          description: Zone not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Zone not found.
+        '400':
+          description: Invalid ID format.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
+        '500':
+          description: Unknown error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerError'
+
+
   /devices:
     post:
       summary: Add a new device.
@@ -39,20 +894,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: "Duplicate found: phone number or token already exists."
+                $ref: '#/components/schemas/DuplicateEntryError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnknownError'
+                $ref: '#/components/schemas/InternalServerError'
 
     get:
       summary: Get all devices.
@@ -72,12 +926,18 @@ paths:
                     example: true
                   devices:
                     $ref: '#/components/schemas/Devices'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving devices.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnknownError'
+                $ref: '#/components/schemas/InternalServerError'
 
   /devices/{id}:
     get:
@@ -108,12 +968,18 @@ paths:
                       - $ref: '#/components/schemas/Device'
                       - type: string
                         example: No device found.
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Error while retrieving the device.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnknownError'
+                $ref: '#/components/schemas/InternalServerError'
 
     put:
       summary: Update a device.
@@ -165,20 +1031,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: "Duplicate found: phone number or token already exists."
+                $ref: '#/components/schemas/DuplicateEntryError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnknownError'
+                $ref: '#/components/schemas/InternalServerError'
 
     delete:
       summary: Delete a device.
@@ -224,20 +1089,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  success:
-                    type: boolean
-                    example: false
-                  message:
-                    type: string
-                    example: Wrong input id format.
+                $ref: '#/components/schemas/InvalidInputError'
+        '401':
+          description: Unauthorized - Invalid token or missing token.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unknown error.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnknownError'
+                $ref: '#/components/schemas/InternalServerError'
 
   /notifications/send:
     post:
@@ -295,24 +1159,54 @@ paths:
                   message:
                     type: string
                     example: Invalid FCM registration token provided. Please check the token.
+        # '401':
+        #   description: Unauthorized - Invalid token or missing token.
+        #   content:
+        #     application/json:
+        #       schema:
+        #         $ref: '#/components/schemas/UnauthorizedError'
         '500':
           description: Unexpected error while sending the notification.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UnknownError'
+                $ref: '#/components/schemas/InternalServerError'
 
 components:
+  securitySchemes:
+    bearerAuth: # Name of the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT # Optional, indicates the token format
   schemas:
+    DuplicateEntryError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Duplicate entry found"
+    AccountRequestBody:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          example: "StrongPassword123*"
     DeviceRequestBody:
       type: object
       required:
       - identifier
-      - token
       properties:
-        token:
-          type: string
-          example: "abcd1234efgh5678"
         identifier:
           type: string
           description: |
@@ -320,20 +1214,53 @@ components:
             Valid characters include numbers (0-9) and letters (A-F, a-f).
           example: "3A0DE20B"
           pattern: "^[A-Fa-f0-9]{8}$"
+    ZoneRequestBody:
+      type: object
+      required:
+      - name
+      - number
+      properties:
+        name:
+          type: string
+          example: "Zone 1"
+        number:
+          type: integer
+          example: 
+    PartitionRequestBody:
+      type: object
+      required:
+      - name
+      - number
+      properties:
+        name:
+          type: string
+          example: "Partition 1"
+        number:
+          type: integer
+          example: 
+    ClientRequestBody:
+      type: object
+      required:
+      - account_name
+      - number
+      properties:
+        account_name:
+          type: string
+          example: "Test client"
+        number:
+          type: integer
+          example: 1234
         
     Device:
       type: object
       required:
       - id
       - identifier
-      - token
+      - account_id
       properties:
         id:
           type: integer
           example: 1
-        token:
-          type: string
-          example: "abcd1234efgh5678"
         identifier:
           type: string
           description: |
@@ -341,11 +1268,94 @@ components:
             Valid characters include numbers (0-9) and letters (A-F, a-f).
           example: "3A0DE20B"
           pattern: "^[A-Fa-f0-9]{8}$"
+        account_id:
+          type: integer
+          description: |
+            References the `id` of an `Account` object.
+          example: 1
     Devices:
       type: array
       items:
         $ref: '#/components/schemas/Device'
-    UnknownError:
+    Zone:
+      type: object
+      required:
+      - id
+      - name
+      - number
+      - account_id
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Zone 1"
+        number:
+          type: integer
+          example: 100
+        account_id:
+          type: integer
+          description: |
+            References the `id` of an `Account` object.
+          example: 1
+    Zones:
+      type: array
+      items:
+        $ref: '#/components/schemas/Zone'
+    Partition:
+      type: object
+      required:
+      - id
+      - name
+      - number
+      - account_id
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Partition 1"
+        number:
+          type: integer
+          example: 10
+        account_id:
+          type: integer
+          description: |
+            References the `id` of an `Account` object.
+          example: 1
+    Partitions:
+      type: array
+      items:
+        $ref: '#/components/schemas/Partition'
+    Client:
+      type: object
+      required:
+      - id
+      - account_name
+      - number
+      - account_id
+      properties:
+        id:
+          type: integer
+          example: 1
+        account_name:
+          type: string
+          example: "Test client"
+        number:
+          type: integer
+          example: 1234
+        account_id:
+          type: integer
+          description: |
+            References the `id` of an `Account` object.
+          example: 1
+    Clients:
+      type: array
+      items:
+        $ref: '#/components/schemas/Client'
+    InternalServerError:
       type: object
       required:
         - success
@@ -357,8 +1367,23 @@ components:
           example: false
         message:
           type: string
-          example: An unexpected error occurred while sending the notification.
+          example: An unexpected error occurred.
         error:
           type: string
           example: "Error details."
+    InvalidInputError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Invalid input format"
+    UnauthorizedError:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Unauthorized"
 
