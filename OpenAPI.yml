@@ -22,7 +22,7 @@ paths:
         content:
           application/json:
             schema: 
-              $ref: '#/components/schemas/AccountRequestBody'
+              $ref: '#/components/schemas/AccountRegisterBody'
       responses:
         '201':
           description: Account registration success.
@@ -87,7 +87,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AccountRequestBody'
+              $ref: '#/components/schemas/AccountLoginBody'
       responses:
         200:
           description: Login successful
@@ -1188,7 +1188,7 @@ components:
         message:
           type: string
           example: "Duplicate entry found"
-    AccountRequestBody:
+    AccountLoginBody:
       type: object
       required:
         - email
@@ -1199,6 +1199,24 @@ components:
           format: email
           example: "user@example.com"
         password:
+          type: string
+          format: password
+          example: "StrongPassword123*"
+    AccountRegisterBody:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          example: "StrongPassword123*"
+        confirm_password:
           type: string
           format: password
           example: "StrongPassword123*"

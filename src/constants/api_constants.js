@@ -5,6 +5,7 @@ const constants = {
   emailAlreadyExistsError: 'Email already exists',
   emailFormatInvalidError: 'Email format invalid',
   weakPasswordError: 'Password is not strong enough',
+  passwordNotMatchingError: 'Passwords do not match',
   resourceNotFoundError: 'Resource not found',
   forbiddenResourceError: 'Resource access forbidden',
   accountNotFoundError: 'Account not found',
