@@ -16,10 +16,11 @@ router.post('/register', async (req, res) => {
   try {
     const email = req.body.email;
     const password = req.body.password;
+    const confirmPassword = req.body.confirm_password;
     const token = req.body.token
 
     //Check if values are empty or rnot
-    if(!email || !password || !token) {
+    if(!email || !password || !confirmPassword || !token) {
       return res.status(400).json({success: false, message: constants.inputFieldError});
     }
 
@@ -35,6 +36,10 @@ router.post('/register', async (req, res) => {
 
     if(!isStrongPassword(password)) {
       return res.status(400).json({success: false, message: constants.weakPasswordError});
+    }
+
+    if(password !== confirmPassword) {
+      return res.status(400).json({success: false, message: constants.passwordNotMatchingError});
     }
 
     //Hash password
