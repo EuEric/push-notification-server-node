@@ -1185,7 +1185,7 @@ components:
         success:
           type: boolean
           example: false
-        error:
+        message:
           type: string
           example: "Duplicate entry found"
     AccountRequestBody:
@@ -1368,22 +1368,19 @@ components:
         message:
           type: string
           example: An unexpected error occurred.
-        error:
-          type: string
-          example: "Error details."
     InvalidInputError:
       type: object
       properties:
         success:
           type: boolean
           example: false
-        error:
+        message:
           type: string
           example: "Invalid input format"
     UnauthorizedError:
       type: object
       properties:
-        error:
+        message:
           type: string
           example: "Unauthorized"
 
